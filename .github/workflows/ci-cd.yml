@@ -43,7 +43,7 @@ jobs:
         with:
           client-id:      ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id:      ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id:${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # 4   Log in to ACR (credentials come from the previous az login)
       - uses: azure/docker-login@v2
