@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springboot-api
+  template:
+    metadata:
+      labels:
+        app: springboot-api
+    spec:
+      containers:
+        - name: api
+          image:  REPLACED_BY_GITHUB_ACTION   # left blank on purpose
+          ports:
+            - containerPort: 8080

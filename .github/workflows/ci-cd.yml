@@ -1,0 +1,73 @@
+name: Build & Deploy to AKS
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  # If you created an environment variable called REGISTRY_LOGIN_SERVER in
+  # the repo settings this will pick it up; otherwise hard‑code your ACR FQDN.
+  REGISTRY: ${{ vars.REGISTRY_LOGIN_SERVER || 'myacr123.azurecr.io' }}
+  IMAGE_NAME: springboot-demo
+
+permissions:
+  id-token: write    # allow OIDC authentication to Azure
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 0   Check out code
+      - uses: actions/checkout@v4
+
+      # 1   Set up JDK and Gradle cache
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # (Optional but speeds up builds)
+      - uses: gradle/gradle-build-action@v3
+
+      # 2   Run unit tests
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test
+
+      # 3   OIDC login to Azure
+      - uses: azure/login@v2
+        with:
+          client-id:      ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:      ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id:${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # 4   Log in to ACR (credentials come from the previous az login)
+      - uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.REGISTRY }}
+
+      # 5   Build and push the container image
+      - name: Build and push container
+        run: |
+          docker build -t $REGISTRY/$IMAGE_NAME:${{ github.sha }} .
+          docker push    $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+
+      # 6   Configure kubectl context for AKS
+      - uses: azure/aks-set-context@v4
+        with:
+          resource-group: my-aks-rg          # <-- change if you used another RG
+          cluster-name:  myAksCluster        # <-- change if you used another name
+
+      # 7   Deploy manifests (image tag auto‑substituted) and wait for rollout
+      - uses: azure/k8s-deploy@v4
+        with:
+          manifests: |
+            k8s/deployment.yaml
+            k8s/service.yaml
+          images: |
+            $REGISTRY/$IMAGE_NAME:${{ github.sha }}
+          # No imagePullSecret needed because you attached the ACR to AKS
