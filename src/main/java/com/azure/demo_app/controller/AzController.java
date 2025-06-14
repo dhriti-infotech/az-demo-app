@@ -15,6 +15,6 @@ public class AzController {
     @GetMapping("/az/v1")
     public String checkHealth() {
         log.info("Inside checkHealth() method of AzController");
-        return "Az Demo App is Up and Running";
+        return "Az Demo App is Up and Running using AKS";
     }
 }
