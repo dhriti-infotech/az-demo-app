@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: springboot-api
-          image: fdxpocacr.azurecr.io/springboot-demo:latest  # 👈 REQUIRED placeholder
+          image: fdxpocacr.azurecr.io/springboot-demo:latest  
           ports:
             - containerPort: 8080
