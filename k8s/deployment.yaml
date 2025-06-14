@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: springboot-api
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: springboot-api
@@ -13,7 +13,7 @@ spec:
         app: springboot-api
     spec:
       containers:
-        - name: api
-          image:     # left blank on purpose
+        - name: springboot-api
+          image: fdxpocacr.azurecr.io/springboot-demo:latest  # 👈 REQUIRED placeholder
           ports:
             - containerPort: 8080
